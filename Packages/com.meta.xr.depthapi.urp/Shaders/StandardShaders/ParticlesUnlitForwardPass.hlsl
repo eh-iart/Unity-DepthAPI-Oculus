@@ -6,6 +6,7 @@
 
 #include "../EnvironmentOcclusionURP.hlsl"
 float _EnvironmentDepthBias;
+float _MaxDistance;
 
 void InitializeInputData(VaryingsParticle input, SurfaceData surfaceData, out InputData inputData)
 {
@@ -149,7 +150,7 @@ half4 fragParticleUnlit(VaryingsParticle input) : SV_Target
     finalColor.rgb = MixFog(finalColor.rgb, inputData.fogCoord);
     finalColor.a = OutputAlpha(finalColor.a, IsSurfaceTypeTransparent(_Surface));
 
-    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, positionWS, finalColor, _EnvironmentDepthBias);
+    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, positionWS, finalColor, _EnvironmentDepthBias, _MaxDistance);
 
     return finalColor;
 }

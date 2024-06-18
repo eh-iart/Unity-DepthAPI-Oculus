@@ -104,9 +104,9 @@ float CalculateEnvironmentDepthOcclusionLinearWithBias(float2 uv, float sceneLin
   return 1.0f;
 }
 
-float CalculateEnvironmentDepthOcclusionInEnvDepthSpaceWithBias(float3 worldCoords, float bias)
+float CalculateEnvironmentDepthOcclusionInEnvDepthSpaceWithBias(float3 worldCoords, float bias, float maxDistance)
 {
-  const float4 depthSpace =
+ 	 const float4 depthSpace =
     mul(_EnvironmentDepthReprojectionMatrices[unity_StereoEyeIndex], float4(worldCoords, 1.0));
 
   const float2 uvCoords = (depthSpace.xy / depthSpace.w + 1.0f) * 0.5f;
@@ -114,13 +114,30 @@ float CalculateEnvironmentDepthOcclusionInEnvDepthSpaceWithBias(float3 worldCoor
   float linearSceneDepth = (1.0f / ((depthSpace.z / depthSpace.w) + _EnvironmentDepthZBufferParams.y)) * _EnvironmentDepthZBufferParams.x;
   linearSceneDepth -= bias * linearSceneDepth * UNITY_NEAR_CLIP_VALUE;
 
-  #if defined(HARD_OCCLUSION)
-   return CalculateEnvironmentDepthHardOcclusion_Internal(uvCoords, linearSceneDepth);
+   float occlusionDepth = SampleEnvironmentDepthLinear_Internal(uvCoords);
+
+   #if defined(HARD_OCCLUSION)
+   return occlusionDepth > linearSceneDepth || occlusionDepth > maxDistance;
+
   #elif defined(SOFT_OCCLUSION)
-   return CalculateEnvironmentDepthSoftOcclusion_Internal(uvCoords, linearSceneDepth);
+   return clamp(CalculateEnvironmentDepthSoftOcclusion_Internal(uvCoords, linearSceneDepth) + (occlusionDepth > maxDistance),0,1);
   #endif
 
   return 1.0f;
+}
+
+
+float CalculateEnviromentDepthOcclusionInEnvDepthSpaceWithBiasDistance(float3 worldCoords, float bias)
+{
+
+	 const float4 depthSpace =
+    mul(_EnvironmentDepthReprojectionMatrices[unity_StereoEyeIndex], float4(worldCoords, 1.0));
+
+  const float2 uvCoords = (depthSpace.xy / depthSpace.w + 1.0f) * 0.5f;
+
+  float linearSceneDepth = (1.0f / ((depthSpace.z / depthSpace.w) + _EnvironmentDepthZBufferParams.y)) * _EnvironmentDepthZBufferParams.x;
+  linearSceneDepth -= bias * linearSceneDepth * UNITY_NEAR_CLIP_VALUE;
+ return SampleEnvironmentDepthLinear_Internal(uvCoords);
 }
 
 float CalculateEnvironmentDepthOcclusionWithBias(float2 uv, float sceneDepth, float bias)
@@ -142,33 +159,37 @@ float CalculateEnvironmentDepthOcclusion(float2 uv, float sceneDepth)
 #define META_DEPTH_INITIALIZE_VERTEX_OUTPUT(output, vertex) \
   output.posWorld = META_DEPTH_CONVERT_OBJECT_TO_WORLD(vertex)
 
-#define META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias) \
-  CalculateEnvironmentDepthOcclusionInEnvDepthSpaceWithBias(posWorld.xyz, zBias);
+#define META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias, maxDistance) \
+  CalculateEnvironmentDepthOcclusionInEnvDepthSpaceWithBias(posWorld.xyz, zBias, maxDistance);
 
-#define META_DEPTH_GET_OCCLUSION_VALUE(input, zBias) META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(input.posWorld, zBias);
+#define META_DEPTH_GET_OCCLUSION_DISTANCE_WORLDPOS(posWorld, zBias) \
+  CalculateEnviromentDepthOcclusionInEnvDepthSpaceWithBiasDistance(posWorld.xyz, zBias);
 
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(posWorld, output, zBias) \
-    float occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias); \
+#define META_DEPTH_GET_OCCLUSION_VALUE(input, zBias, maxDistance) META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(input.posWorld, zBias, maxDistance);
+
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(posWorld, output, zBias, maxDistance) \
+    float occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias, maxDistance); \
     if (occlusionValue < 0.01) { \
       discard; \
     } \
     output *= occlusionValue; \
 
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, fieldName, output, zBias) \
-  META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input . ##fieldName, output, zBias)
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, fieldName, output, zBias, maxDistance) \
+  META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input . ##fieldName, output, zBias, maxDistance)
 
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY(input, output, zBias) \
-  META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.posWorld, output, zBias)
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY(input, output, zBias, maxDistance) \
+  META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.posWorld, output, zBias, maxDistance)
 
 #else
 
 #define META_DEPTH_VERTEX_OUTPUT(number)
 #define META_DEPTH_INITIALIZE_VERTEX_OUTPUT(output, vertex)
 #define META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias) 1.0
+#define META_DEPTH_GET_OCCLUSION_DISTANCE_WORLDPOS(posWorld, zBias, maxDistance) 1.0
 #define META_DEPTH_GET_OCCLUSION_VALUE(input, zBias) 1.0
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(posWorld, output, zBias)
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, fieldName, output, zBias)
-#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY(input, output, zBias) output = output
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(posWorld, output, zBias, maxDistance)
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, fieldName, output, zBias, maxDistance)
+#define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY(input, output, zBias, maxDistance) output = output
 
 #endif
 #endif

@@ -28,6 +28,7 @@ Shader "Meta/Depth/URP/Occlusion Unlit"
         [HideInInspector] _SampleGI("SampleGI", float) = 0.0 // needed from bakedlit
 
         _EnvironmentDepthBias ("Environment Depth Bias", Float) = 0.0
+        _MaxDistance ("Max Distance", Float) = 7.0
     }
 
     SubShader

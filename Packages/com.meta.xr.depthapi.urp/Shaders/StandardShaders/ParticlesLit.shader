@@ -66,6 +66,7 @@ Shader "Meta/Depth/URP/Occlusion Particles Lit"
         [HideInInspector] _Color("color", Color) = (1,1,1,1)
 
         _EnvironmentDepthBias ("Environment Depth Bias", Float) = 0.0
+        _MaxDistance ("Max Distance", Float) = 7.0
     }
 
     HLSLINCLUDE

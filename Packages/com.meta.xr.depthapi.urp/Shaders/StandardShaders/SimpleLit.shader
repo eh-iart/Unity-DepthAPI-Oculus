@@ -50,7 +50,8 @@ Shader "Meta/Depth/URP/Occlusion Simple Lit"
         [HideInInspector][NoScaleOffset]unity_ShadowMasks("unity_ShadowMasks", 2DArray) = "" {}
 
         _EnvironmentDepthBias ("Environment Depth Bias", Float) = 0.0
-    }
+        _MaxDistance ("Max Distance", Float) = 7.0
+   }
 
     SubShader
     {

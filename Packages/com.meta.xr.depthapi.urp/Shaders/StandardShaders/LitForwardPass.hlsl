@@ -12,6 +12,8 @@
 
 #include "../EnvironmentOcclusionURP.hlsl"
 float _EnvironmentDepthBias;
+float _MaxDistance;
+
 
 // GLES2 has limited amount of interpolators
 #if defined(_PARALLAXMAP) && !defined(SHADER_API_GLES)
@@ -243,7 +245,7 @@ void LitPassFragment(
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, IsSurfaceTypeTransparent(_Surface));
 
-    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.positionWS, color, _EnvironmentDepthBias);
+    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.positionWS, color, _EnvironmentDepthBias, _MaxDistance);
 
     outColor = color;
 
@@ -254,3 +256,5 @@ void LitPassFragment(
 }
 
 #endif
+
+

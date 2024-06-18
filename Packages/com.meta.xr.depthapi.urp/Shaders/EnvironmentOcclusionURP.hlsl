@@ -24,3 +24,5 @@ float DepthConvertDepthToLinear(float zspace) {
 #include "Packages/com.meta.xr.depthapi/Runtime/Core/Shaders/EnvironmentOcclusion.cginc"
 
 #endif
+
+

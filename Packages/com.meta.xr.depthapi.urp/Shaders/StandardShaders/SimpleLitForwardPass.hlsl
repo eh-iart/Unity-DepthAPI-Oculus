@@ -8,6 +8,7 @@
 
 #include "../EnvironmentOcclusionURP.hlsl"
 float _EnvironmentDepthBias;
+float _MaxDistance;
 
 struct Attributes
 {
@@ -198,7 +199,7 @@ void LitPassFragmentSimple(
     color.rgb = MixFog(color.rgb, inputData.fogCoord);
     color.a = OutputAlpha(color.a, IsSurfaceTypeTransparent(_Surface));
 
-    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.positionWS, color, _EnvironmentDepthBias);
+    META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(input.positionWS, color, _EnvironmentDepthBias, _MaxDistance);
 
     outColor = color;
 

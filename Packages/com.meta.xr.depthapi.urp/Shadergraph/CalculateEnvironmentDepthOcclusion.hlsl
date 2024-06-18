@@ -24,21 +24,40 @@
 #include "Packages/com.meta.xr.depthapi.urp/Shaders/EnvironmentOcclusionURP.hlsl"
 #endif
 
-void CalculateEnvironmentDepthOcclusion_float(float3 posWorld, float environmentDepthBias, out float occlusionValue)
+void CalculateEnvironmentDepthOcclusion_float(float3 posWorld, float environmentDepthBias, float maxDistance, out float occlusionValue)
 {
 #ifndef SHADERGRAPH_PREVIEW
-    occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, environmentDepthBias);
+    occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, environmentDepthBias, maxDistance);
 #else
 		occlusionValue = 1.0;
 #endif
 }
 
-void CalculateEnvironmentDepthOcclusion_half(float3 posWorld, float environmentDepthBias, out half occlusionValue)
+void CalculateEnvironmentDepthOcclusion_half(float3 posWorld, float environmentDepthBias, float maxDistance, out half occlusionValue)
 {
 #ifndef SHADERGRAPH_PREVIEW
-    occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, environmentDepthBias);
+    occlusionValue = META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, environmentDepthBias, maxDistance);
 #else
 		occlusionValue = 1.0;
+#endif
+}
+
+void CalculateEnvironmentDepthDistance_float(float2 uvPos, out float distance)
+{
+	#ifndef SHADERGRAPH_PREVIEW
+    distance = SampleEnvironmentDepthLinear_Internal(uvPos);
+#else
+		distance = 1.0;
+#endif
+}
+
+
+void CalculateEnvironmentDepthDistanceFromWorld_float(float3 worldCoords, float environmentDepthBias, out float distance)
+{
+  	#ifndef SHADERGRAPH_PREVIEW
+    distance = META_DEPTH_GET_OCCLUSION_DISTANCE_WORLDPOS(worldCoords, environmentDepthBias);
+#else
+		distance = 1.0;
 #endif
 }
 
