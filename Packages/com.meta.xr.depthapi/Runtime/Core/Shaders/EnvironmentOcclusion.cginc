@@ -184,8 +184,8 @@ float CalculateEnvironmentDepthOcclusion(float2 uv, float sceneDepth)
 
 #define META_DEPTH_VERTEX_OUTPUT(number)
 #define META_DEPTH_INITIALIZE_VERTEX_OUTPUT(output, vertex)
-#define META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias) 1.0
-#define META_DEPTH_GET_OCCLUSION_DISTANCE_WORLDPOS(posWorld, zBias, maxDistance) 1.0
+#define META_DEPTH_GET_OCCLUSION_VALUE_WORLDPOS(posWorld, zBias, maxDistance) 1.0
+#define META_DEPTH_GET_OCCLUSION_DISTANCE_WORLDPOS(posWorld, zBias) 1.0
 #define META_DEPTH_GET_OCCLUSION_VALUE(input, zBias) 1.0
 #define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS(posWorld, output, zBias, maxDistance)
 #define META_DEPTH_OCCLUDE_OUTPUT_PREMULTIPLY_WORLDPOS_NAME(input, fieldName, output, zBias, maxDistance)
