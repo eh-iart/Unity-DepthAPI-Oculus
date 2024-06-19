@@ -30,7 +30,9 @@ namespace Meta.XR.Depth
         public static readonly string HardOcclusionKeyword = "HARD_OCCLUSION";
         public static readonly string SoftOcclusionKeyword = "SOFT_OCCLUSION";
 
+        public OcclusionType OcclusionType => _occlusionType;
         [SerializeField] private OcclusionType _occlusionType = OcclusionType.NoOcclusion;
+
 
         private EnvironmentDepthTextureProvider _depthTextureProvider;
 
